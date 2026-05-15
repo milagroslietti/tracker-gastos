@@ -58,3 +58,4 @@ app.listen(PORT, async () => {
     console.warn("⚠️  APP_URL not set — webhook not registered");
   }
 });
+process.stdin.resume();
