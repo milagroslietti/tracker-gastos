@@ -63,7 +63,7 @@ async function parseExpense(userMessage) {
   const today = new Date().toISOString().split("T")[0];
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: "claude-haiku-3-5-20241022",
     max_tokens: 500,
     system: SYSTEM_PROMPT.replace(/TODAY/g, today),
     messages: [{ role: "user", content: userMessage }],
@@ -89,7 +89,7 @@ async function answerQuery(userMessage, expenses) {
   });
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: "claude-haiku-3-5-20241022",
     max_tokens: 1000,
     system: `Eres un asistente financiero personal. El usuario te hará preguntas sobre sus finanzas.
 Responde siempre en español.
