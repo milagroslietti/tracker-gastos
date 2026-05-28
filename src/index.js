@@ -59,3 +59,4 @@ app.listen(PORT, async () => {
   }
 });
 process.stdin.resume();
+process.stdin.resume();
