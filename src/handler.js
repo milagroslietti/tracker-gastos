@@ -1,3 +1,4 @@
+// v2 - payment method, income, installments
 const { parseExpense, answerQuery } = require("./claude");
 const { saveExpense, getExpensesThisMonth, getExpensesLastNMonths, getRecentExpenses, deleteLastExpense, saveFixedExpense } = require("./db");
 const { sendMessage } = require("./telegram");
