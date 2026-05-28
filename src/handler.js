@@ -1,4 +1,4 @@
-// v2 - payment method, income, installments
+// v3 - force redeploy
 const { parseExpense, answerQuery } = require("./claude");
 const { saveExpense, getExpensesThisMonth, getExpensesLastNMonths, getRecentExpenses, deleteLastExpense, saveFixedExpense } = require("./db");
 const { sendMessage } = require("./telegram");
