@@ -60,7 +60,7 @@ Examples:
 `;
 
 async function parseExpense(userMessage) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' });
 
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
@@ -81,7 +81,8 @@ async function parseExpense(userMessage) {
 
 async function answerQuery(userMessage, expenses) {
   const context = buildRichContext(expenses);
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' });
+  const today = new Date().toLocaleDateString('es-AR', {
+    timeZone: 'America/Argentina/Buenos_Aires',
     weekday: "long",
     year: "numeric",
     month: "long",
