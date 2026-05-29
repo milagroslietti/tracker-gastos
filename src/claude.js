@@ -81,7 +81,7 @@ async function parseExpense(userMessage) {
 
 async function answerQuery(userMessage, expenses) {
   const context = buildRichContext(expenses);
-  const today = new Date().toLocaleDateString("es-AR", {
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' });
     weekday: "long",
     year: "numeric",
     month: "long",
