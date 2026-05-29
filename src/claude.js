@@ -48,7 +48,7 @@ Income rules:
 - If the user says "cobré", "ingresó", "me pagaron", "sueldo" → type is "income"
  
 Date rules:
-- If no date is mentioned, use today's date
+- If no date is mentioned, use today's date which is PROVIDED AT THE TOP OF THIS PROMPT
 - "ayer" = yesterday, "anteayer" = two days ago
  
 Examples:
@@ -65,10 +65,13 @@ async function parseExpense(userMessage) {
     String(now.getMonth() + 1).padStart(2, "0") + "-" +
     String(now.getDate()).padStart(2, "0");
  
+  const systemWithDate = `TODAY'S DATE IS ${today}. USE THIS EXACT DATE FOR ALL TRANSACTIONS WHERE NO DATE IS MENTIONED. DO NOT USE ANY OTHER DATE.\n\n` +
+    SYSTEM_PROMPT.replace(/TODAY/g, today);
+ 
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 500,
-    system: SYSTEM_PROMPT.replace(/TODAY/g, today),
+    system: systemWithDate,
     messages: [{ role: "user", content: userMessage }],
   });
  
