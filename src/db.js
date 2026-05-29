@@ -156,7 +156,7 @@ async function getSummaryForWidget(telegramUserId) {
     .map(([name, totals]) => ({ name, ...totals }))
     .sort((a, b) => b.ARS - a.ARS);
 
-  const recent = expenses.slice(0, 5).map((e) => ({
+  const recent = expenses.slice(0, 50).map((e) => ({
     date: e.date,
     category: e.category,
     merchant: e.merchant,
