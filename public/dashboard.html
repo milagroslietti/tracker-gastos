@@ -1,12 +1,778 @@
-💸
-Tracker de Gastos
-—
-🔑
-Configurar acceso
-Ingresá tu ID de Telegram y la clave secreta para ver tu dashboard.
-URL DEL SERVIDOR
-https://tracker-gastos-production-bfdb.up.railway.app
-TU ID DE TELEGRAM
-CLAVE SECRETA
-Conectar →
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker de Gastos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --border: #e8e4dc;
+    --text: #1a1916;
+    --muted: #8c8880;
+    --accent: #2d5a27;
+    --accent-light: #e8f0e6;
+    --danger: #c0392b;
+    --danger-light: #fdf0ef;
+    --gold: #b8860b;
+    --gold-light: #fdf8e8;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+  }
+
+  .header h1 {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+
+  .month-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .setup-screen {
+    max-width: 480px;
+    margin: 80px auto;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .setup-screen .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .setup-screen h2 {
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .setup-screen p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .setup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .setup-form label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .setup-form input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .setup-form input:focus { border-color: var(--accent); }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .btn-primary:hover { background: #234d1f; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .kpi-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .kpi-card.income .kpi-value { color: var(--accent); }
+  .kpi-card.expense .kpi-value { color: var(--danger); }
+  .kpi-card.savings .kpi-value { color: var(--gold); }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .header { padding: 16px 20px; }
+    .content { padding: 20px 16px; }
+    .kpi-value { font-size: 20px; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 20px;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  .cat-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .cat-name {
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cat-bar-wrap {
+    flex: 2;
+    background: var(--bg);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .cat-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  .cat-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 80px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .recent-list { display: flex; flex-direction: column; }
+
+  .recent-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .recent-row:last-child { border-bottom: none; }
+
+  .recent-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .recent-info { flex: 1; min-width: 0; }
+
+  .recent-desc {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .recent-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .recent-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .recent-amount.expense { color: var(--danger); }
+  .recent-amount.income { color: var(--accent); }
+
+  .empty {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 80px 0;
+    color: var(--muted);
+  }
+
+  .loading .spinner {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: var(--danger-light);
+    border: 1px solid #f5c6c2;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--danger);
+    margin-bottom: 20px;
+  }
+
+  .method-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .savings-bar {
+    margin-top: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .savings-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.8s ease;
+  }
+
+  .savings-fill.positive { background: var(--accent); }
+  .savings-fill.negative { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">💸</div>
+    <h1>Tracker de Gastos</h1>
+  </div>
+  <span class="month-badge" id="monthBadge">—</span>
+</div>
+
+<div class="content" id="mainContent">
+  <div id="setupScreen" class="setup-screen">
+    <div class="icon">🔑</div>
+    <h2>Configurar acceso</h2>
+    <p>Ingresá tu ID de Telegram y la clave secreta para ver tu dashboard.</p>
+    <div class="setup-form">
+      <div>
+        <label>URL del servidor</label>
+        <input type="text" id="inputUrl" placeholder="https://tracker-gastos-production-bfdb.up.railway.app" value="https://tracker-gastos-production-bfdb.up.railway.app" />
+      </div>
+      <div>
+        <label>Tu ID de Telegram</label>
+        <input type="text" id="inputUserId" placeholder="123456789" />
+      </div>
+      <div>
+        <label>Clave secreta (WIDGET_SECRET)</label>
+        <input type="password" id="inputSecret" placeholder="••••••••" />
+      </div>
+      <div id="setupError" class="error-msg" style="display:none"></div>
+      <button class="btn btn-primary" onclick="connect()">Conectar →</button>
+    </div>
+  </div>
+
+  <div id="loadingScreen" class="loading" style="display:none">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div id="dashboard" style="display:none">
+    <div id="errorBanner" class="error-msg" style="display:none"></div>
+
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Gastos por categoría</div>
+        <div class="cat-list" id="catList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Método de pago</div>
+        <div class="chart-wrap" style="height: 200px;">
+          <canvas id="methodChart" role="img" aria-label="Distribución por método de pago">Distribución de gastos por método de pago.</canvas>
+        </div>
+        <div class="method-chips" id="methodChips"></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Distribución de gastos</div>
+        <div class="chart-wrap" style="height: 220px;">
+          <canvas id="catChart" role="img" aria-label="Gráfico de torta por categoría">Gastos por categoría.</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Últimas transacciones</div>
+        <div class="recent-list" id="recentList"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 0;">
+      <div class="card-title">Balance del mes</div>
+      <div id="savingsInfo"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAT_COLORS = ['#2d5a27','#b8860b','#c0392b','#1a6b9e','#7b3fa0','#d4730a','#2e7d6e','#555','#888','#333'];
+const METHOD_COLORS = { transferencia:'#2d5a27', debito:'#1a6b9e', credito:'#c0392b', efectivo:'#b8860b' };
+const CAT_EMOJI = { 'Food & Coffee':'☕','Transport':'🚗','Groceries':'🛒','Shopping':'🛍️','Health':'💊','Subscriptions':'📺','Entertainment':'🎬','Developer Tools':'💻','Travel':'✈️','Utilities':'💡','Transfers':'💸','Fees':'🏦','Other':'📦','Sueldo':'💼','Freelance':'🖥️','Inversiones':'📈' };
+
+let config = null;
+let methodChartInst = null;
+let catChartInst = null;
+
+function saveConfig(url, userId, secret) {
+  localStorage.setItem('tgDashConfig', JSON.stringify({ url, userId, secret }));
+}
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem('tgDashConfig')); } catch { return null; }
+}
+
+async function connect() {
+  const url = document.getElementById('inputUrl').value.trim().replace(/\/$/, '');
+  const userId = document.getElementById('inputUserId').value.trim();
+  const secret = document.getElementById('inputSecret').value.trim();
+  const errEl = document.getElementById('setupError');
+  errEl.style.display = 'none';
+
+  if (!url || !userId || !secret) {
+    errEl.textContent = 'Completá todos los campos.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  config = { url, userId, secret };
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('loadingScreen').style.display = 'block';
+
+  try {
+    await loadDashboard();
+    saveConfig(url, userId, secret);
+  } catch (e) {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('setupScreen').style.display = 'block';
+    errEl.textContent = 'No se pudo conectar: ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function loadDashboard() {
+  const { url, userId, secret } = config;
+  const res = await fetch(`${url}/api/summary?user_id=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`);
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`Error ${res.status}: ${txt}`);
+  }
+  const data = await res.json();
+
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('monthBadge').textContent = data.month || '—';
+
+  renderKPIs(data);
+  renderCategories(data.by_category || []);
+  renderMethodChart(data);
+  renderCatChart(data.by_category || []);
+  renderRecent(data.recent || []);
+  renderSavings(data);
+}
+
+function fmt(n, currency) {
+  const abs = Math.abs(n);
+  const str = abs >= 1000000
+    ? (abs / 1000000).toFixed(1) + 'M'
+    : abs >= 1000
+    ? (abs / 1000).toFixed(0) + 'K'
+    : Math.round(abs).toLocaleString('es-AR');
+  return (n < 0 ? '-' : '') + (currency || 'ARS') + ' ' + str;
+}
+
+function fmtFull(n) {
+  return Math.round(n).toLocaleString('es-AR');
+}
+
+function renderKPIs(data) {
+  const income = (data.by_category || [])
+    .filter(c => ['Sueldo','Freelance','Inversiones'].includes(c.name))
+    .reduce((s, c) => s + (c.ARS || 0), 0);
+
+  const savings = income - data.total_ars;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card expense">
+      <div class="kpi-label">Gastos ARS</div>
+      <div class="kpi-value">${fmt(data.total_ars)}</div>
+      <div class="kpi-sub">${data.transaction_count} transacciones</div>
+    </div>
+    ${data.total_usd > 0 ? `
+    <div class="kpi-card expense">
+      <div class="kpi-label">Gastos USD</div>
+      <div class="kpi-value">${fmt(data.total_usd, 'USD')}</div>
+      <div class="kpi-sub">en dólares</div>
+    </div>` : ''}
+    ${income > 0 ? `
+    <div class="kpi-card income">
+      <div class="kpi-label">Ingresos</div>
+      <div class="kpi-value">${fmt(income)}</div>
+      <div class="kpi-sub">este mes</div>
+    </div>
+    <div class="kpi-card savings">
+      <div class="kpi-label">Ahorro neto</div>
+      <div class="kpi-value">${fmt(savings)}</div>
+      <div class="kpi-sub">${income > 0 ? Math.round(savings/income*100) + '% del ingreso' : ''}</div>
+    </div>` : ''}
+  `;
+}
+
+function renderCategories(cats) {
+  const expenses = cats.filter(c => !['Sueldo','Freelance','Inversiones'].includes(c.name));
+  const maxARS = Math.max(...expenses.map(c => c.ARS || 0), 1);
+  const el = document.getElementById('catList');
+
+  if (!expenses.length) {
+    el.innerHTML = '<div class="empty">Sin gastos registrados</div>';
+    return;
+  }
+
+  el.innerHTML = expenses.slice(0, 8).map((c, i) => `
+    <div class="cat-row">
+      <span class="cat-dot" style="background:${CAT_COLORS[i % CAT_COLORS.length]}"></span>
+      <span class="cat-name">${CAT_EMOJI[c.name] || '•'} ${c.name}</span>
+      <div class="cat-bar-wrap">
+        <div class="cat-bar" style="width:${Math.round((c.ARS||0)/maxARS*100)}%;background:${CAT_COLORS[i % CAT_COLORS.length]}"></div>
+      </div>
+      <span class="cat-amount">$ ${fmtFull(c.ARS || 0)}</span>
+    </div>
+  `).join('');
+}
+
+function renderMethodChart(data) {
+  const all = data.recent || [];
+  const methodMap = {};
+  for (const t of all) {
+    if (t.type !== 'expense') continue;
+    const m = t.payment_method || 'otros';
+    methodMap[m] = (methodMap[m] || 0) + 1;
+  }
+
+  const labels = Object.keys(methodMap);
+  const values = labels.map(l => methodMap[l]);
+  const colors = labels.map(l => METHOD_COLORS[l] || '#888');
+  const total = values.reduce((a,b) => a+b, 0);
+
+  const ctx = document.getElementById('methodChart').getContext('2d');
+  if (methodChartInst) methodChartInst.destroy();
+
+  if (!labels.length) {
+    document.getElementById('methodChips').innerHTML = '<span style="color:var(--muted);font-size:13px">Sin datos</span>';
+    return;
+  }
+
+  methodChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} transacciones` }
+      }}
+    }
+  });
+
+  document.getElementById('methodChips').innerHTML = labels.map((l, i) => `
+    <span class="chip">
+      <span class="chip-dot" style="background:${colors[i]}"></span>
+      ${l} <span style="color:var(--muted)">${total > 0 ? Math.round(values[i]/total*100) : 0}%</span>
+    </span>
+  `).join('');
+}
+
+function renderCatChart(cats) {
+  const expenses = cats.filter(c => !['Sueldo','Freelance','Inversiones'].includes(c.name) && (c.ARS || 0) > 0);
+  const ctx = document.getElementById('catChart').getContext('2d');
+  if (catChartInst) catChartInst.destroy();
+
+  if (!expenses.length) return;
+
+  catChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: expenses.map(c => c.name),
+      datasets: [{
+        data: expenses.map(c => Math.round(c.ARS || 0)),
+        backgroundColor: CAT_COLORS.slice(0, expenses.length),
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.label}: ARS ${fmtFull(ctx.parsed)}` }
+      }}
+    }
+  });
+}
+
+function renderRecent(recent) {
+  const el = document.getElementById('recentList');
+  if (!recent.length) {
+    el.innerHTML = '<div class="empty">Sin transacciones recientes</div>';
+    return;
+  }
+  el.innerHTML = recent.map(t => `
+    <div class="recent-row">
+      <div class="recent-icon">${CAT_EMOJI[t.category] || '•'}</div>
+      <div class="recent-info">
+        <div class="recent-desc">${t.description || t.merchant || t.category}</div>
+        <div class="recent-meta">${t.date}${t.payment_method ? ' · ' + t.payment_method : ''}</div>
+      </div>
+      <div class="recent-amount ${t.type}">${t.type === 'income' ? '+' : '-'} ${t.currency} ${fmtFull(t.amount)}</div>
+    </div>
+  `).join('');
+}
+
+function renderSavings(data) {
+  const income = (data.by_category || [])
+    .filter(c => ['Sueldo','Freelance','Inversiones'].includes(c.name))
+    .reduce((s, c) => s + (c.ARS || 0), 0);
+
+  const el = document.getElementById('savingsInfo');
+
+  if (!income) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:14px">Registrá tus ingresos para ver el balance del mes.</p>';
+    return;
+  }
+
+  const savings = income - data.total_ars;
+  const pct = Math.max(0, Math.min(100, Math.round(savings / income * 100)));
+  const positive = savings >= 0;
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px;">
+      <span style="color:var(--muted)">Ingresos: <strong style="color:var(--text)">ARS ${fmtFull(income)}</strong></span>
+      <span style="color:var(--muted)">Gastos: <strong style="color:var(--danger)">ARS ${fmtFull(data.total_ars)}</strong></span>
+      <span style="color:var(--muted)">Ahorro: <strong style="color:${positive ? 'var(--accent)' : 'var(--danger)'}">${positive ? '+' : ''}ARS ${fmtFull(savings)}</strong></span>
+    </div>
+    <div class="savings-bar">
+      <div class="savings-fill ${positive ? 'positive' : 'negative'}" style="width:${pct}%"></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace">
+      ${positive ? `Ahorraste el ${pct}% de tus ingresos este mes` : `Gastaste ${Math.abs(100-pct)}% más de lo que ingresaste`}
+    </p>
+  `;
+}
+
+const saved = loadConfig();
+if (saved) {
+  config = saved;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('loadingScreen').style.display = 'block';
+  loadDashboard().catch(e => {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('setupScreen').style.display = 'block';
+    document.getElementById('inputUrl').value = saved.url || '';
+    document.getElementById('inputUserId').value = saved.userId || '';
+  });
+}
+</script>
+</body>
+</html>
