@@ -7,6 +7,8 @@ const { getSummaryForWidget } = require("./db");
 
 const app = express();
 app.use(express.json());
+app.use(express.static('public'));
+
 
 app.get("/", (req, res) => {
   res.json({ status: "ok", service: "gastos-bot" });
